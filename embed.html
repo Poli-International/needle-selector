@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional tattoo needle selector - Embedded widget">
+    <title>Tattoo Needle Selector</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Embed-specific overrides */
+        .needle-selector__header {
+            padding: 1rem;
+        }
+
+        .needle-selector__header-buttons,
+        .needle-selector__email-section,
+        .needle-selector__support,
+        .needle-selector__footer-info,
+        .needle-selector__modal {
+            display: none !important;
+        }
+
+        .needle-selector__footer {
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .needle-selector__logo {
+            height: 40px;
+        }
+
+        .needle-selector__title {
+            font-size: 1.5rem;
+        }
+
+        .needle-selector__subtitle {
+            font-size: 0.75rem;
+        }
+
+        body {
+            background: transparent;
+        }
+
+        .needle-selector {
+            min-height: auto;
+        }
+        .embed__email-section{background:linear-gradient(135deg,#3B82F6 0%,#8B5CF6 100%);padding:2rem 1rem;margin:2rem 0;border-radius:8px}
+        .embed__email-box{max-width:500px;margin:0 auto;text-align:center}
+        .embed__email-title{font-size:1.3rem;font-weight:700;color:#FFF;margin-bottom:0.5rem}
+        .embed__email-subtitle{font-size:0.9rem;color:rgba(255,255,255,0.9);margin-bottom:1rem}
+        .embed__email-input-group{display:flex;gap:0.5rem;margin-bottom:0.75rem}
+        .embed__email-input{flex:1;padding:0.75rem;border:2px solid rgba(255,255,255,0.3);border-radius:6px;background:rgba(255,255,255,0.95);color:#1A1A1A;font-size:0.9rem}
+        .embed__email-input:focus{outline:none;border-color:#FFF;background:#FFF}
+        .embed__email-submit{padding:0.75rem 1.5rem;background:#FF006E;color:#FFF;border:none;border-radius:6px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem}
+        .embed__email-submit:hover{background:#D6005C;transform:translateY(-2px)}
+        .embed__email-success,.embed__email-error{padding:0.5rem;border-radius:6px;font-size:0.85rem;margin-top:0.5rem}
+        .embed__email-success{background:rgba(40,167,69,0.2);color:#FFF;border:1px solid rgba(40,167,69,0.5)}
+        .embed__email-error{background:rgba(220,53,69,0.2);color:#FFF;border:1px solid rgba(220,53,69,0.5)}
+        .embed__email-trust{display:flex;justify-content:center;gap:1rem;font-size:0.75rem;color:rgba(255,255,255,0.8);flex-wrap:wrap}
+        .embed__features-section{background:#F8F8F8;padding:2rem 1rem;margin:2rem 0;border-radius:8px;border:2px solid #E0E0E0}
+        .embed__features-title{font-size:1.3rem;font-weight:700;color:#FF006E;margin-bottom:1rem;text-align:center}
+        .embed__features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;max-width:600px;margin:0 auto}
+        .embed__feature-item{display:flex;align-items:center;gap:0.5rem;padding:0.75rem;background:#FFF;border-radius:6px;font-size:0.9rem;border:1px solid #E8E8E8}
+        .embed__feature-check{color:#28A745;font-size:1.1rem;font-weight:700}
+        .embed__feature-text{color:#333}
+        @media (max-width:600px){.embed__email-input-group{flex-direction:column}.embed__features-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="needle-selector">
+
+        <!-- Header (Simplified) -->
+        <header class="embed-header">
+            <div class="embed-header-content">
+                <img src="images/Poli-International-Co.webp" alt="Poli International" class="embed-logo">
+                <span class="embed-title">Needle Selector</span>
+
+                <!-- Header Actions (right side) -->
+                <div class="embed-header-actions">
+                    <a href='https://ko-fi.com/C0C81NEXBV' target='_blank' class="needle-selector__kofi-button">
+                        <span class="kofi-icon">☕</span>
+                        <span class="kofi-text">Buy Me a Coffee</span>
+                    </a>
+                    <!-- Dark Mode Toggle (REQUIRED) -->
+                    <button id="darkModeToggle" class="embed-dark-toggle" aria-label="Toggle dark mode">
+                        <span class="dark-mode-icon">◐</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="needle-selector__main">
+
+            <!-- Quick Selector Section -->
+            <section class="needle-selector__quick-selector">
+                <h2 class="needle-selector__section-title">Find Your Perfect Needle</h2>
+                <p class="needle-selector__section-subtitle">
+                    Select your tattoo style and technique to get instant needle recommendations
+                </p>
+
+                <form class="needle-selector__form" id="needle-form">
+                    <div class="needle-selector__form-grid">
+
+                        <!-- Tattoo Style -->
+                        <div class="needle-selector__form-group">
+                            <label for="tattoo-style" class="needle-selector__label">
+                                <span class="label-icon">🎨</span>
+                                Tattoo Style
+                            </label>
+                            <select id="tattoo-style" class="needle-selector__select" required>
+                                <option value="">Select a style...</option>
+                                <option value="japanese">Japanese Traditional</option>
+                                <option value="american">American Traditional</option>
+                                <option value="realism">Black & Grey Realism</option>
+                                <option value="fine-line">Fine Line</option>
+                                <option value="watercolor">Watercolor</option>
+                                <option value="neo-traditional">Neo-Traditional</option>
+                                <option value="dotwork">Dotwork</option>
+                                <option value="tribal">Tribal</option>
+                                <option value="geometric">Geometric</option>
+                                <option value="portrait">Portrait</option>
+                                <option value="script">Script/Lettering</option>
+                                <option value="cover-up">Cover-Up</option>
+                                <option value="ornamental">Ornamental</option>
+                                <option value="new-school">New School</option>
+                                <option value="blackwork">Blackwork</option>
+                            </select>
+                        </div>
+
+                        <!-- Primary Technique -->
+                        <div class="needle-selector__form-group">
+                            <label for="technique" class="needle-selector__label">
+                                <span class="label-icon">✏️</span>
+                                Primary Technique
+                            </label>
+                            <select id="technique" class="needle-selector__select" required>
+                                <option value="">Select technique...</option>
+                                <option value="lining">Lining (Outlines)</option>
+                                <option value="shading">Shading (Soft)</option>
+                                <option value="color-packing">Color Packing (Dense)</option>
+                                <option value="whip-shading">Whip Shading</option>
+                                <option value="stipple">Stipple/Dotwork</option>
+                                <option value="color-blend">Color Blending</option>
+                                <option value="black-grey">Black & Grey Work</option>
+                            </select>
+                        </div>
+
+                        <!-- Detail Level -->
+                        <div class="needle-selector__form-group">
+                            <label class="needle-selector__label">
+                                <span class="label-icon">🔍</span>
+                                Detail Level
+                            </label>
+                            <div class="needle-selector__radio-group">
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="detail" value="fine" class="needle-selector__radio">
+                                    <span class="radio-text">Fine</span>
+                                </label>
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="detail" value="medium" class="needle-selector__radio" checked>
+                                    <span class="radio-text">Medium</span>
+                                </label>
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="detail" value="bold" class="needle-selector__radio">
+                                    <span class="radio-text">Bold</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Skin Type -->
+                        <div class="needle-selector__form-group">
+                            <label class="needle-selector__label">
+                                <span class="label-icon">👤</span>
+                                Skin Type
+                            </label>
+                            <div class="needle-selector__radio-group">
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="skin" value="thin" class="needle-selector__radio">
+                                    <span class="radio-text">Thin</span>
+                                </label>
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="skin" value="normal" class="needle-selector__radio" checked>
+                                    <span class="radio-text">Normal</span>
+                                </label>
+                                <label class="needle-selector__radio-label">
+                                    <input type="radio" name="skin" value="thick" class="needle-selector__radio">
+                                    <span class="radio-text">Thick</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="needle-selector__submit-button">
+                        Find Recommended Needles
+                    </button>
+                </form>
+            </section>
+
+            <!-- Results Display -->
+            <section class="needle-selector__results" id="results-section" style="display: none;">
+                <h2 class="needle-selector__section-title">Recommended Needle Configuration</h2>
+
+                <div class="needle-selector__result-card">
+                    <!-- Primary Recommendation -->
+                    <div class="needle-selector__primary-result">
+                        <div class="needle-selector__needle-code" id="primary-needle-code">
+                            9RL
+                        </div>
+                        <div class="needle-selector__needle-name" id="primary-needle-name">
+                            9 Round Liner
+                        </div>
+                        <div class="needle-selector__visual-container">
+                            <svg class="needle-selector__needle-diagram" id="primary-needle-diagram" width="200" height="200" viewBox="0 0 200 200">
+                                <!-- Needle diagram will be generated by JavaScript -->
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Needle Details -->
+                    <div class="needle-selector__details">
+                        <div class="needle-selector__detail-item">
+                            <h3 class="needle-selector__detail-title">Needle Count</h3>
+                            <p class="needle-selector__detail-text" id="needle-count">9 needles</p>
+                        </div>
+
+                        <div class="needle-selector__detail-item">
+                            <h3 class="needle-selector__detail-title">Configuration Type</h3>
+                            <p class="needle-selector__detail-text" id="config-type">Round Liner (RL)</p>
+                        </div>
+
+                        <div class="needle-selector__detail-item">
+                            <h3 class="needle-selector__detail-title">Best For</h3>
+                            <ul class="needle-selector__use-list" id="use-list">
+                                <li>Bold outlines</li>
+                                <li>Traditional tattoos</li>
+                                <li>Clean linework</li>
+                            </ul>
+                        </div>
+
+                        <div class="needle-selector__detail-item">
+                            <h3 class="needle-selector__detail-title">Recommended Settings</h3>
+                            <p class="needle-selector__detail-text" id="settings">
+                                <strong>Voltage:</strong> 7.5-9V<br>
+                                <strong>Speed:</strong> Medium<br>
+                                <strong>Depth:</strong> 1.5-2mm
+                            </p>
+                        </div>
+
+                        <div class="needle-selector__detail-item">
+                            <h3 class="needle-selector__detail-title">Pro Tips</h3>
+                            <ul class="needle-selector__tip-list" id="tip-list">
+                                <li>Keep consistent hand speed for clean lines</li>
+                                <li>Use with firm skin stretch</li>
+                                <li>Great for both experienced and learning artists</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Alternative Recommendations -->
+                    <div class="needle-selector__alternatives">
+                        <h3 class="needle-selector__alt-title">Alternative Options</h3>
+                        <div class="needle-selector__alt-grid" id="alternatives-grid">
+                            <!-- Alternative needles will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Needle Code Decoder -->
+            <section class="needle-selector__decoder">
+                <h2 class="needle-selector__section-title">Needle Code Decoder</h2>
+                <p class="needle-selector__section-subtitle">
+                    Enter any needle code to see its complete breakdown
+                </p>
+
+                <div class="needle-selector__decoder-form">
+                    <div class="needle-selector__input-group">
+                        <label for="needle-code-input" class="needle-selector__label">
+                            <span class="label-icon">🔢</span>
+                            Needle Code
+                        </label>
+                        <input
+                            type="text"
+                            id="needle-code-input"
+                            class="needle-selector__text-input"
+                            placeholder="e.g., 9RL, 11M1, 15RS"
+                            aria-label="Enter needle code">
+                        <button type="button" id="decode-button" class="needle-selector__decode-button">
+                            Decode
+                        </button>
+                    </div>
+
+                    <div class="needle-selector__decoder-result" id="decoder-result" style="display: none;">
+                        <!-- Decoder results will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <section class="embed__email-section">
+            <div class="embed__email-box">
+                <h2 class="embed__email-title">🔔 Get Notified of New Tools!</h2>
+                <p class="embed__email-subtitle">Be first to know when we launch new free tools for tattoo professionals.</p>
+                <form id="embed-email-form"><div class="embed__email-input-group">
+                    <input type="email" id="embed-email-input" class="embed__email-input" placeholder="Your email address" required>
+                    <button type="submit" class="embed__email-submit">Notify Me</button>
+                </div>
+                <p class="embed__email-success" id="embed-email-success" style="display:none">✅ Thanks! We'll notify you when new tools launch!</p>
+                <p class="embed__email-error" id="embed-email-error" style="display:none">❌ Please enter a valid email address.</p>
+                <div class="embed__email-trust"><span>✅ Free tool updates only</span><span>✅ No spam</span><span>✅ Unsubscribe anytime</span></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="embed__features-section">
+            <h2 class="embed__features-title">✨ Tool Features</h2>
+            <div class="embed__features-grid">
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Needle Configuration Guide</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Technique Recommendations</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Style-Based Selection</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Detailed Specifications</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Mobile-Responsive Design</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Dark/Light Mode</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">100% Free, No Ads</span></div>
+                <div class="embed__feature-item"><span class="embed__feature-check">✅</span><span class="embed__feature-text">Professional Results</span></div>
+            </div>
+        </section>
+
+        <!-- Footer (Simplified) -->
+        <footer class="embed-footer">
+            <div class="embed-footer-content">
+                <a href="https://poliinternational.com/tools" target="_blank" class="embed-footer-btn embed-footer-btn--tools">
+                    <span class="btn-icon">🔧</span>
+                    <span class="btn-text">More Tools</span>
+                </a>
+                <a href='https://ko-fi.com/C0C81NEXBV' target='_blank' class="embed-footer-btn embed-footer-btn--support">
+                    <span class="btn-icon">☕</span>
+                    <span class="btn-text">Support Us</span>
+                </a>
+                <a href="index.html" target="_blank" class="embed-footer-link">
+                    Open Full Version →
+                </a>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/needle-data.js"></script>
+    <script src="js/selector.js"></script>
+</body>
+</html>
