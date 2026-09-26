@@ -723,3 +723,20 @@ const styleRecommendations = {
     }
   }
 };
+
+const GAUGE_DESCRIPTIONS = {
+  '12': '#12 (0.35mm Standard)',
+  '10': '#10 (0.30mm Bugpin)',
+  '08': '#08 (0.25mm Micro Bugpin)',
+  '06': '#06 (0.20mm Ultra Micro)'
+};
+
+if (typeof window !== 'undefined') {
+  window.needleDatabase = needleDatabase;
+  window.GAUGE_DESCRIPTIONS = GAUGE_DESCRIPTIONS;
+  window.styleRecommendations = styleRecommendations;
+  window.needleRecommendations = styleRecommendations;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { needleDatabase, GAUGE_DESCRIPTIONS, styleRecommendations, needleRecommendations: styleRecommendations };
+}
