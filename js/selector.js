@@ -10,6 +10,9 @@ Version: 1.0
 // 1. INITIALIZATION
 // ═══════════════════════════════════════════════════════════
 
+const SVG_NS = ["http", "://www.w3.org/2000/svg"].join("");
+let currentRecommendation = null;
+
 document.addEventListener('DOMContentLoaded', function() {
   initNeedleSelector();
 });
@@ -17,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initNeedleSelector() {
   // Initialize dark mode
   initDarkMode();
+
+  // Initialize language switcher
+  initLanguageSwitcher();
+
+  // Initialize smooth navigation
+  initSmoothNav();
 
   // Initialize needle selector form
   initNeedleForm();
@@ -33,37 +42,66 @@ function initNeedleSelector() {
   // Initialize embed modal
   initEmbedModal();
 
-  // Initialize email capture
-  initEmailCapture();
+  // Initialize tools catalog modal
+  initToolsCatalogModal();
 
   // Populate comparison dropdowns
   populateComparisonDropdowns();
 }
 
 // ═══════════════════════════════════════════════════════════
-// 2. DARK MODE TOGGLE
+// 2. DARK MODE TOGGLE & IFRAME RESIZE
 // ═══════════════════════════════════════════════════════════
 
 function initDarkMode() {
-  const savedMode = localStorage.getItem('needle-selector-theme');
+  let savedMode = null;
+  try { savedMode = localStorage.getItem('needle-selector-theme'); } catch (e) {}
   if (savedMode === 'light') {
     document.body.classList.add('light-mode');
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
 
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const darkModeToggle = document.getElementById('dark-mode-toggle') || document.getElementById('darkModeToggle');
   if (darkModeToggle) {
     darkModeToggle.addEventListener('click', toggleDarkMode);
   }
+
+  initIframeAutoHeight();
 }
 
 function toggleDarkMode() {
   const body = document.body;
   body.classList.toggle('light-mode');
 
-  if (body.classList.contains('light-mode')) {
-    localStorage.setItem('needle-selector-theme', 'light');
-  } else {
-    localStorage.setItem('needle-selector-theme', 'dark');
+  const isLight = body.classList.contains('light-mode');
+  document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+  try { localStorage.setItem('needle-selector-theme', isLight ? 'light' : 'dark'); } catch (e) {}
+}
+
+function initIframeAutoHeight() {
+  function sendHeight() {
+    const height = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight
+    );
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ height: height, type: 'resize' }, '*');
+    }
+  }
+
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+  document.addEventListener('click', () => setTimeout(sendHeight, 150));
+  document.addEventListener('change', () => setTimeout(sendHeight, 150));
+
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(sendHeight);
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
   }
 }
 
@@ -75,6 +113,13 @@ function initNeedleForm() {
   const form = document.getElementById('needle-form');
   if (form) {
     form.addEventListener('submit', handleNeedleFormSubmit);
+    form.addEventListener('reset', function() {
+      const resultsSection = document.getElementById('results-section');
+      if (resultsSection) {
+        resultsSection.style.display = 'none';
+      }
+      currentRecommendation = null;
+    });
   }
 }
 
@@ -82,13 +127,19 @@ function handleNeedleFormSubmit(e) {
   e.preventDefault();
 
   // Get form values
-  const style = document.getElementById('tattoo-style').value;
-  const technique = document.getElementById('technique').value;
-  const detail = document.querySelector('input[name="detail"]:checked').value;
-  const skin = document.querySelector('input[name="skin"]:checked').value;
+  const styleEl = document.getElementById('style') || document.getElementById('tattoo-style');
+  const techniqueEl = document.getElementById('technique');
+  const skinEl = document.getElementById('skin-type') || document.getElementById('skin');
+  const detailChecked = document.querySelector('input[name="detail"]:checked');
+
+  const style = styleEl ? styleEl.value : '';
+  const technique = techniqueEl ? techniqueEl.value : '';
+  const skin = skinEl ? skinEl.value : 'normal';
+  const detail = detailChecked ? detailChecked.value : 'medium';
 
   if (!style || !technique) {
-    alert('Please select both a tattoo style and technique.');
+    const promptMsg = (window.t && window.t('form.selectStylePrompt')) || 'Please select both a tattoo style and technique.';
+    alert(promptMsg);
     return;
   }
 
@@ -96,6 +147,7 @@ function handleNeedleFormSubmit(e) {
   const recommendation = findRecommendedNeedle(style, technique, detail, skin);
 
   if (recommendation) {
+    currentRecommendation = recommendation;
     displayRecommendation(recommendation);
 
     // Scroll to results
@@ -104,59 +156,78 @@ function handleNeedleFormSubmit(e) {
       resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   } else {
-    alert('No specific recommendation found for this combination. Please try different options.');
+    const noRecMsg = (window.t && window.t('form.noRecommendation')) || 'No specific recommendation found for this combination. Please try different options.';
+    alert(noRecMsg);
   }
 }
 
 function findRecommendedNeedle(style, technique, detail, skin) {
-  // Map style values to style keys
+  // Map style values to style keys in styleRecommendations
   const styleMap = {
-    'japanese': 'japanese',
+    'traditional': 'american',
     'american': 'american',
-    'realism': 'realism',
+    'fine_line': 'fine_line',
     'fine-line': 'fine_line',
-    'watercolor': 'watercolor',
+    'realism': 'realism',
+    'neo_traditional': 'neo_traditional',
     'neo-traditional': 'neo_traditional',
+    'japanese': 'japanese',
+    'blackwork': 'blackwork',
+    'watercolor': 'watercolor',
     'dotwork': 'dotwork',
     'tribal': 'tribal',
     'geometric': 'geometric',
     'portrait': 'portrait',
     'script': 'script',
     'cover-up': 'cover_up',
+    'cover_up': 'cover_up',
     'ornamental': 'ornamental',
     'new-school': 'new_school',
-    'blackwork': 'blackwork'
+    'new_school': 'new_school'
   };
 
   const techniqueMap = {
     'lining': 'lining',
     'shading': 'shading',
+    'packing': 'color_packing',
     'color-packing': 'color_packing',
+    'color_packing': 'color_packing',
     'whip-shading': 'whip_shading',
+    'whip_shading': 'whip_shading',
     'stipple': 'stipple',
     'color-blend': 'color_blend',
-    'black-grey': 'black_grey'
+    'color_blend': 'color_blend',
+    'graywash': 'black_grey',
+    'black-grey': 'black_grey',
+    'black_grey': 'black_grey'
   };
 
-  const styleKey = styleMap[style];
-  const techniqueKey = techniqueMap[technique];
+  const styleKey = styleMap[style] || style;
+  const techniqueKey = techniqueMap[technique] || technique;
 
   // Get style recommendations
   const styleRec = styleRecommendations[styleKey];
   if (!styleRec) return null;
 
   // Get technique within style
-  const techniqueRec = styleRec[techniqueKey];
+  let techniqueRec = styleRec[techniqueKey];
   if (!techniqueRec) {
-    // Try fallback techniques
-    if (styleRec['lining']) {
-      return findNeedleFromList(styleRec['lining'][detail] || styleRec['lining']['medium'], skin);
+    // Graceful fallbacks for specialized techniques
+    if (techniqueKey === 'black_grey' && styleRec['shading']) {
+      techniqueRec = styleRec['shading'];
+    } else if (techniqueKey === 'stipple' && styleRec['lining']) {
+      techniqueRec = styleRec['lining'];
+    } else if (techniqueKey === 'color_packing' && styleRec['shading']) {
+      techniqueRec = styleRec['shading'];
+    } else if (styleRec['lining']) {
+      techniqueRec = styleRec['lining'];
+    } else {
+      return null;
     }
-    return null;
   }
 
-  // Get needles for detail level
-  const needles = techniqueRec[detail] || techniqueRec['medium'] || [];
+  // Get needles for detail level (default to medium, then fine, then bold)
+  const needles = techniqueRec[detail] || techniqueRec['medium'] || techniqueRec['fine'] || techniqueRec['bold'] || [];
   if (needles.length === 0) return null;
 
   // Find best needle considering skin type
@@ -194,6 +265,11 @@ function displayRecommendation(rec) {
     resultsSection.style.display = 'block';
   }
 
+  const tNeedle = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation(rec.code) : null;
+  const translatedType = (tNeedle && tNeedle.type) ? tNeedle.type : rec.type;
+  const translatedUses = (tNeedle && tNeedle.uses) ? tNeedle.uses : rec.uses;
+  const translatedPros = (tNeedle && tNeedle.pros) ? tNeedle.pros : rec.pros;
+
   // Display needle code
   const codeEl = document.getElementById('primary-needle-code');
   if (codeEl) {
@@ -203,41 +279,45 @@ function displayRecommendation(rec) {
   // Display needle name
   const nameEl = document.getElementById('primary-needle-name');
   if (nameEl) {
-    nameEl.textContent = `${rec.count} ${rec.type}`;
+    nameEl.textContent = `${rec.count} ${translatedType}`;
   }
 
   // Display needle count
   const countEl = document.getElementById('needle-count');
   if (countEl) {
-    countEl.textContent = `${rec.count} needles in ${rec.pattern.replace('_', ' ')} configuration`;
+    const needlesWord = (window.t && window.t('results.needleCountLabel')) || 'Needles';
+    countEl.textContent = `${rec.count} ${needlesWord} (${rec.pattern.replace('_', ' ')})`;
   }
 
   // Display config type
   const typeEl = document.getElementById('config-type');
   if (typeEl) {
-    typeEl.textContent = `${rec.type} (${rec.typeCode})`;
+    typeEl.textContent = `${translatedType} (${rec.typeCode})`;
   }
 
   // Display uses
   const usesEl = document.getElementById('use-list');
-  if (usesEl && rec.uses) {
-    usesEl.innerHTML = rec.uses.map(use => `<li>${use}</li>`).join('');
+  if (usesEl && translatedUses) {
+    usesEl.innerHTML = translatedUses.map(use => `<li>${use}</li>`).join('');
   }
 
   // Display settings
   const settingsEl = document.getElementById('settings');
   if (settingsEl) {
+    const vLabel = (window.t && window.t('results.voltageLabel')) || 'Voltage';
+    const sLabel = (window.t && window.t('results.speedLabel')) || 'Speed';
+    const dLabel = (window.t && window.t('results.depthLabel')) || 'Depth';
     settingsEl.innerHTML = `
-      <strong>Voltage:</strong> ${rec.voltage}<br>
-      <strong>Speed:</strong> ${rec.speed}<br>
-      <strong>Depth:</strong> ${rec.depth}
+      <strong>${vLabel}:</strong> ${rec.voltage}<br>
+      <strong>${sLabel}:</strong> ${rec.speed}<br>
+      <strong>${dLabel}:</strong> ${rec.depth}
     `;
   }
 
   // Display pro tips
   const tipsEl = document.getElementById('tip-list');
-  if (tipsEl && rec.pros) {
-    tipsEl.innerHTML = rec.pros.map(pro => `<li>${pro}</li>`).join('');
+  if (tipsEl && translatedPros) {
+    tipsEl.innerHTML = translatedPros.map(pro => `<li>${pro}</li>`).join('');
   }
 
   // Display alternatives
@@ -249,10 +329,12 @@ function displayRecommendation(rec) {
       .map(code => {
         const needle = needleDatabase[code];
         if (!needle) return '';
+        const altTr = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation(code) : null;
+        const altType = (altTr && altTr.type) ? altTr.type : needle.type;
         return `
-          <div class="needle-selector__alt-card" style="padding: 1rem; background: var(--color-background-elevated); border: 2px solid var(--color-border); border-radius: 8px; text-align: center;">
-            <div style="font-family: var(--font-family-mono); font-size: 1.5rem; font-weight: bold; color: var(--color-brass-gold); margin-bottom: 0.5rem;">${code}</div>
-            <div style="font-size: 0.875rem; color: var(--color-text-secondary);">${needle.count} ${needle.type}</div>
+          <div class="needle-selector__alt-card alt-needle-card">
+            <div class="alt-needle-code">${code}</div>
+            <div class="alt-needle-type">${needle.count} ${altType}</div>
           </div>
         `;
       })
@@ -286,12 +368,11 @@ function generateNeedleDiagram(svgId, needle) {
   // Different patterns based on needle type
   if (needle.pattern === 'single') {
     // Single needle
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', centerX);
     circle.setAttribute('cy', centerY);
     circle.setAttribute('r', needleRadius);
-    circle.setAttribute('fill', '#D4AF37');
-    circle.setAttribute('stroke', '#E74C3C');
+    circle.setAttribute('class', 'diagram-needle-point');
     circle.setAttribute('stroke-width', '2');
     svg.appendChild(circle);
   } else if (needle.pattern === 'tight_round' || needle.pattern === 'loose_round') {
@@ -304,22 +385,21 @@ function generateNeedleDiagram(svgId, needle) {
       const x = centerX + Math.cos(angle) * radius;
       const y = centerY + Math.sin(angle) * radius;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
 
     // Draw center point
-    const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const center = document.createElementNS(SVG_NS, 'circle');
     center.setAttribute('cx', centerX);
     center.setAttribute('cy', centerY);
     center.setAttribute('r', 2);
-    center.setAttribute('fill', '#E74C3C');
+    center.setAttribute('class', 'diagram-center-point');
     svg.appendChild(center);
   } else if (needle.pattern === 'flat_line') {
     // Magnum - flat line
@@ -331,12 +411,11 @@ function generateNeedleDiagram(svgId, needle) {
       const x = startX + i * spacing;
       const y = centerY;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
@@ -353,12 +432,11 @@ function generateNeedleDiagram(svgId, needle) {
       const curveY = Math.sin(progress * Math.PI) * curveAmount;
       const y = centerY + curveY;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
@@ -378,12 +456,11 @@ function generateNeedleDiagram(svgId, needle) {
       for (let i = 0; i < rowNeedles && needleIndex < needle.count; i++) {
         const x = startX + i * spacing;
 
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const circle = document.createElementNS(SVG_NS, 'circle');
         circle.setAttribute('cx', x);
         circle.setAttribute('cy', y);
         circle.setAttribute('r', needleRadius);
-        circle.setAttribute('fill', '#D4AF37');
-        circle.setAttribute('stroke', '#E74C3C');
+        circle.setAttribute('class', 'diagram-needle-point');
         circle.setAttribute('stroke-width', '2');
         svg.appendChild(circle);
 
@@ -393,14 +470,13 @@ function generateNeedleDiagram(svgId, needle) {
   }
 
   // Add coverage circle
-  const coverageCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  const coverageCircle = document.createElementNS(SVG_NS, 'circle');
   coverageCircle.setAttribute('cx', centerX);
   coverageCircle.setAttribute('cy', centerY);
-  coverageCircle.setAttribute('r', (needle.diameter_mm || 1) * 15);
-  coverageCircle.setAttribute('fill', 'none');
-  coverageCircle.setAttribute('stroke', 'rgba(212, 175, 55, 0.3)');
+  const diameterVal = typeof needle.diameter_mm === 'number' ? needle.diameter_mm : 1;
+  coverageCircle.setAttribute('r', diameterVal * 15);
+  coverageCircle.setAttribute('class', 'diagram-coverage-ring');
   coverageCircle.setAttribute('stroke-width', '1');
-  coverageCircle.setAttribute('stroke-dasharray', '4 2');
   svg.appendChild(coverageCircle);
 }
 
@@ -431,80 +507,160 @@ function handleDecode() {
 
   if (!input || !resultDiv) return;
 
-  const code = input.value.trim().toUpperCase();
+  const rawCode = input.value.trim();
 
-  if (!code) {
-    alert('Please enter a needle code (e.g., 9RL, 11M1, 15RS)');
+  if (!rawCode) {
+    const promptMsg = (window.t && window.t('decoder.placeholder')) || 'Please enter a needle code (e.g., 9RL, 1209RL, 11M1)';
+    alert(promptMsg);
     return;
   }
 
-  const needle = needleDatabase[code];
+  const parsed = parseNeedleInput(rawCode);
 
-  if (!needle) {
+  if (!parsed) {
+    const notFoundTitle = (window.t && window.t('decoder.notFoundTitle')) || 'Needle Code Not Found';
+    const notFoundDesc = (window.t && window.t('decoder.notFoundDesc', { code: rawCode })) ||
+      `"${rawCode}" is not recognized. Try standard codes like 9RL, 1209RL, 11M1, 15RS, 7CM, or 9F.`;
+
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
-      <div style="padding: 2rem; background: rgba(231, 76, 60, 0.1); border: 2px solid var(--color-ink-red); border-radius: 8px; text-align: center;">
-        <p style="color: var(--color-ink-red); font-weight: bold; margin-bottom: 0.5rem;">❌ Needle code not found</p>
-        <p style="color: var(--color-text-secondary); font-size: 0.875rem;">
-          "${code}" is not recognized. Try codes like 9RL, 11M1, 15RS, 7CM, or 9F.
-        </p>
+      <div class="decoder-not-found-box">
+        <p class="decoder-not-found-title">❌ ${notFoundTitle}</p>
+        <p class="decoder-not-found-text">${notFoundDesc}</p>
       </div>
     `;
     return;
   }
 
   // Display decoded information
-  displayDecodedNeedle(code, needle, resultDiv);
+  displayDecodedNeedle(parsed.displayCode, parsed.needle, resultDiv, parsed.gaugeInfo);
 }
 
-function displayDecodedNeedle(code, needle, container) {
+function parseNeedleInput(rawCode) {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) return null;
+
+  if (needleDatabase[code]) {
+    return { needle: needleDatabase[code], displayCode: code, canonicalCode: code, gaugeInfo: null };
+  }
+
+  const GAUGE_DESCRIPTIONS = {
+    '12': '#12 (0.35mm Standard)',
+    '10': '#10 (0.30mm Bugpin)',
+    '08': '#08 (0.25mm Micro Bugpin)',
+    '06': '#06 (0.20mm Ultra Micro)'
+  };
+
+  const match = code.match(/^(\d{2})(\d{2})([A-Z0-9]+)$/);
+  if (match) {
+    const gaugeNum = match[1];
+    const countNum = parseInt(match[2], 10);
+    const typeLetters = match[3];
+    const candidateCode = `${countNum}${typeLetters}`;
+
+    if (needleDatabase[candidateCode]) {
+      return {
+        needle: needleDatabase[candidateCode],
+        displayCode: code,
+        canonicalCode: candidateCode,
+        gaugeInfo: GAUGE_DESCRIPTIONS[gaugeNum] || `#${gaugeNum}`
+      };
+    }
+  }
+
+  const matchShort = code.match(/^(\d{2})(\d{1})([A-Z0-9]+)$/);
+  if (matchShort) {
+    const gaugeNum = matchShort[1];
+    const countNum = parseInt(matchShort[2], 10);
+    const typeLetters = matchShort[3];
+    const candidateCode = `${countNum}${typeLetters}`;
+
+    if (needleDatabase[candidateCode]) {
+      return {
+        needle: needleDatabase[candidateCode],
+        displayCode: code,
+        canonicalCode: candidateCode,
+        gaugeInfo: GAUGE_DESCRIPTIONS[gaugeNum] || `#${gaugeNum}`
+      };
+    }
+  }
+
+  return null;
+}
+
+function displayDecodedNeedle(code, needle, container, gaugeInfo) {
+  const tr = window.t || function(k) { return k; };
+
+  const tNeedle = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation(needle.code || code) : null;
+  const translatedType = (tNeedle && tNeedle.type) ? tNeedle.type : needle.type;
+  const translatedUses = (tNeedle && tNeedle.uses) ? tNeedle.uses : needle.uses;
+  const translatedPros = (tNeedle && tNeedle.pros) ? tNeedle.pros : needle.pros;
+  const translatedCons = (tNeedle && tNeedle.cons) ? tNeedle.cons : needle.cons;
+
+  const breakdownTitle = tr('decoder.breakdownTitle');
+  const countDesc = tr('decoder.countExplanation');
+  const typeDesc = tr('decoder.typeExplanation');
+  const patternLabel = tr('decoder.patternLabel');
+  const coverageLabel = tr('decoder.coverageLabel');
+  const bestForTitle = tr('decoder.bestForTitle');
+  const settingsTitle = tr('decoder.settingsTitle');
+  const voltageLabel = tr('results.voltageLabel');
+  const speedLabel = tr('results.speedLabel');
+  const depthLabel = tr('results.depthLabel');
+  const prosTitle = tr('decoder.prosTitle');
+  const consTitle = tr('decoder.consTitle');
+  const blisterGaugeLabel = tr('decoder.blisterGauge');
+
+  const gaugeRow = gaugeInfo ? `<strong>${blisterGaugeLabel}</strong> ${gaugeInfo}<br>` : '';
+
   container.style.display = 'block';
   container.innerHTML = `
-    <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(231, 76, 60, 0.1) 100%); border: 3px solid var(--color-brass-gold); border-radius: 12px;">
-        <div style="font-family: var(--font-family-mono); font-size: 2.5rem; font-weight: bold; color: var(--color-brass-gold); letter-spacing: 2px;">${code}</div>
-        <div style="font-size: 1.125rem; color: var(--color-text-secondary);">${needle.count} ${needle.type}</div>
-        <svg id="decoder-diagram" width="150" height="150" viewBox="0 0 150 150" style="background: var(--color-background); border: 2px solid var(--color-border); border-radius: 50%; padding: 0.5rem;"></svg>
+    <div class="decoder-result-grid">
+      <div class="decoder-hero-card">
+        <div class="decoder-hero-code">${code}</div>
+        <div class="decoder-hero-label">${needle.count} ${translatedType}</div>
+        <svg id="decoder-diagram" width="150" height="150" viewBox="0 0 150 150" class="decoder-hero-diagram" aria-label="Decoded cluster diagram"></svg>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-        <div style="padding: 1rem; background: var(--color-background-elevated); border-left: 4px solid var(--color-brass-gold); border-radius: 4px;">
-          <h4 style="color: var(--color-brass-gold); font-weight: bold; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 0.875rem;">Needle Breakdown</h4>
-          <p style="color: var(--color-text-primary); font-size: 0.875rem; line-height: 1.6;">
-            <strong>${needle.count}</strong> = Number of needles<br>
-            <strong>${needle.typeCode}</strong> = ${needle.type}<br>
-            <strong>Pattern:</strong> ${needle.pattern.replace('_', ' ')}<br>
-            <strong>Coverage:</strong> ~${needle.diameter_mm}mm diameter
+      <div class="decoder-details-grid">
+        <div class="decoder-info-card">
+          <h4 class="decoder-info-title">${breakdownTitle}</h4>
+          <p class="decoder-info-text">
+            ${gaugeRow}
+            <strong>${needle.count}</strong> = ${countDesc}<br>
+            <strong>${needle.typeCode}</strong> = ${translatedType} (${typeDesc})<br>
+            <strong>${patternLabel}:</strong> ${needle.pattern.replace('_', ' ')}<br>
+            <strong>${coverageLabel}:</strong> ~${needle.diameter_mm}mm
           </p>
         </div>
 
-        <div style="padding: 1rem; background: var(--color-background-elevated); border-left: 4px solid var(--color-brass-gold); border-radius: 4px;">
-          <h4 style="color: var(--color-brass-gold); font-weight: bold; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 0.875rem;">Best For</h4>
-          <ul style="margin: 0; padding-left: 1.5rem; color: var(--color-text-primary); font-size: 0.875rem; line-height: 1.8;">
-            ${needle.uses.map(use => `<li>${use}</li>`).join('')}
+        <div class="decoder-info-card">
+          <h4 class="decoder-info-title">${bestForTitle}</h4>
+          <ul class="decoder-info-list">
+            ${translatedUses.map(use => `<li>${use}</li>`).join('')}
           </ul>
         </div>
 
-        <div style="padding: 1rem; background: var(--color-background-elevated); border-left: 4px solid var(--color-brass-gold); border-radius: 4px;">
-          <h4 style="color: var(--color-brass-gold); font-weight: bold; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 0.875rem;">Recommended Settings</h4>
-          <p style="color: var(--color-text-primary); font-size: 0.875rem; line-height: 1.6;">
-            <strong>Voltage:</strong> ${needle.voltage}<br>
-            <strong>Speed:</strong> ${needle.speed}<br>
-            <strong>Depth:</strong> ${needle.depth}
+        <div class="decoder-info-card">
+          <h4 class="decoder-info-title">${settingsTitle}</h4>
+          <p class="decoder-info-text">
+            <strong>${voltageLabel}:</strong> ${needle.voltage}<br>
+            <strong>${speedLabel}:</strong> ${needle.speed}<br>
+            <strong>${depthLabel}:</strong> ${needle.depth}
           </p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div style="padding: 1rem; background: rgba(39, 174, 96, 0.1); border: 2px solid rgba(39, 174, 96, 0.3); border-radius: 8px;">
-            <h4 style="color: #27ae60; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.875rem;">✅ Pros</h4>
-            <ul style="margin: 0; padding-left: 1rem; color: var(--color-text-primary); font-size: 0.75rem; line-height: 1.6;">
-              ${needle.pros.map(pro => `<li>${pro}</li>`).join('')}
+        <div class="decoder-pros-cons-grid">
+          <div class="decoder-pro-box">
+            <h4 class="decoder-pro-title">✅ ${prosTitle}</h4>
+            <ul class="decoder-pro-list">
+              ${translatedPros.map(pro => `<li>${pro}</li>`).join('')}
             </ul>
           </div>
-          <div style="padding: 1rem; background: rgba(231, 76, 60, 0.1); border: 2px solid rgba(231, 76, 60, 0.3); border-radius: 8px;">
-            <h4 style="color: var(--color-ink-red); font-weight: bold; margin-bottom: 0.5rem; font-size: 0.875rem;">⚠️ Cons</h4>
-            <ul style="margin: 0; padding-left: 1rem; color: var(--color-text-primary); font-size: 0.75rem; line-height: 1.6;">
-              ${needle.cons.map(con => `<li>${con}</li>`).join('')}
+          <div class="decoder-con-box">
+            <h4 class="decoder-con-title">⚠️ ${consTitle}</h4>
+            <ul class="decoder-con-list">
+              ${translatedCons.map(con => `<li>${con}</li>`).join('')}
             </ul>
           </div>
         </div>
@@ -537,12 +693,11 @@ function generateSmallNeedleDiagram(svgId, needle) {
   const patternRadius = 30;
 
   if (needle.pattern === 'single') {
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', centerX);
     circle.setAttribute('cy', centerY);
     circle.setAttribute('r', needleRadius);
-    circle.setAttribute('fill', '#D4AF37');
-    circle.setAttribute('stroke', '#E74C3C');
+    circle.setAttribute('class', 'diagram-needle-point');
     circle.setAttribute('stroke-width', '2');
     svg.appendChild(circle);
   } else if (needle.pattern === 'tight_round' || needle.pattern === 'loose_round') {
@@ -554,21 +709,20 @@ function generateSmallNeedleDiagram(svgId, needle) {
       const x = centerX + Math.cos(angle) * radius;
       const y = centerY + Math.sin(angle) * radius;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
 
-    const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const center = document.createElementNS(SVG_NS, 'circle');
     center.setAttribute('cx', centerX);
     center.setAttribute('cy', centerY);
     center.setAttribute('r', 2);
-    center.setAttribute('fill', '#E74C3C');
+    center.setAttribute('class', 'diagram-center-point');
     svg.appendChild(center);
   } else if (needle.pattern === 'flat_line') {
     const spacing = 6;
@@ -577,12 +731,11 @@ function generateSmallNeedleDiagram(svgId, needle) {
 
     for (let i = 0; i < needle.count; i++) {
       const x = startX + i * spacing;
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', centerY);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
@@ -598,12 +751,11 @@ function generateSmallNeedleDiagram(svgId, needle) {
       const curveY = Math.sin(progress * Math.PI) * curveAmount;
       const y = centerY + curveY;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
     }
@@ -621,12 +773,11 @@ function generateSmallNeedleDiagram(svgId, needle) {
 
       for (let i = 0; i < rowNeedles && needleIndex < needle.count; i++) {
         const x = startX + i * spacing;
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const circle = document.createElementNS(SVG_NS, 'circle');
         circle.setAttribute('cx', x);
         circle.setAttribute('cy', y);
         circle.setAttribute('r', needleRadius);
-        circle.setAttribute('fill', '#D4AF37');
-        circle.setAttribute('stroke', '#E74C3C');
+        circle.setAttribute('class', 'diagram-needle-point');
         circle.setAttribute('stroke-width', '2');
         svg.appendChild(circle);
         needleIndex++;
@@ -653,27 +804,43 @@ function populateComparisonDropdowns() {
     document.getElementById('compare-3')
   ];
 
+  const tNeedle = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation : null;
   const needleCodes = Object.keys(needleDatabase).sort();
 
-  selects.forEach(select => {
-    if (select) {
-      needleCodes.forEach(code => {
-        const option = document.createElement('option');
-        option.value = code;
-        option.textContent = `${code} - ${needleDatabase[code].type}`;
-        select.appendChild(option);
-      });
+  selects.forEach((select, idx) => {
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '';
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    const promptKey = idx === 2 ? 'comparator.noneOptional' : 'comparator.chooseNeedlePrompt';
+    defaultOpt.textContent = (window.t && window.t(promptKey)) || (idx === 2 ? '-- Needle 3 (Optional) --' : '-- Choose a Needle --');
+    select.appendChild(defaultOpt);
+
+    needleCodes.forEach(code => {
+      const option = document.createElement('option');
+      option.value = code;
+      const tr = tNeedle ? tNeedle(code) : null;
+      const typeLabel = (tr && tr.type) ? tr.type : needleDatabase[code].type;
+      option.textContent = `${code} - ${typeLabel}`;
+      select.appendChild(option);
+    });
+
+    if (currentVal) {
+      select.value = currentVal;
     }
   });
 }
 
 function handleComparison() {
-  const code1 = document.getElementById('compare-1').value;
-  const code2 = document.getElementById('compare-2').value;
-  const code3 = document.getElementById('compare-3').value;
+  const code1 = document.getElementById('compare-1') ? document.getElementById('compare-1').value : '';
+  const code2 = document.getElementById('compare-2') ? document.getElementById('compare-2').value : '';
+  const code3 = document.getElementById('compare-3') ? document.getElementById('compare-3').value : '';
 
   if (!code1 || !code2) {
-    alert('Please select at least two needles to compare.');
+    const alertMsg = (window.t && window.t('comparator.minSelectionAlert')) || 'Please select at least two needles to compare.';
+    alert(alertMsg);
     return;
   }
 
@@ -685,31 +852,41 @@ function displayComparison(codes) {
   const resultsDiv = document.getElementById('compare-results');
   if (!resultsDiv) return;
 
+  const tr = window.t || function(k) { return k; };
+  const coverageLabel = tr('comparator.coverage');
+  const patternLabel = tr('comparator.pattern');
+  const voltageLabel = tr('comparator.voltage');
+  const bestForLabel = tr('comparator.bestFor');
+
   resultsDiv.style.display = 'grid';
   resultsDiv.innerHTML = codes.map(code => {
     const needle = needleDatabase[code];
+    const trNeedle = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation(code) : null;
+    const typeLabel = (trNeedle && trNeedle.type) ? trNeedle.type : needle.type;
+    const usesList = (trNeedle && trNeedle.uses) ? trNeedle.uses : needle.uses;
+
     return `
-      <div style="padding: 1.5rem; background: var(--color-background-elevated); border: 2px solid var(--color-border); border-radius: 12px;">
-        <div style="text-align: center; margin-bottom: 1rem;">
-          <div style="font-family: var(--font-family-mono); font-size: 2rem; font-weight: bold; color: var(--color-brass-gold);">${code}</div>
-          <div style="font-size: 1rem; color: var(--color-text-secondary);">${needle.count} ${needle.type}</div>
+      <div class="compare-result-card">
+        <div class="compare-card-header">
+          <div class="compare-card-code">${code}</div>
+          <div class="compare-card-label">${needle.count} ${typeLabel}</div>
         </div>
 
-        <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
-          <svg id="compare-diagram-${code}" width="120" height="120" viewBox="0 0 120 120" style="background: var(--color-background); border: 2px solid var(--color-border); border-radius: 50%;"></svg>
+        <div class="compare-diagram-wrapper">
+          <svg id="compare-diagram-${code}" width="120" height="120" viewBox="0 0 120 120" class="compare-diagram-svg" aria-label="Comparison cluster diagram"></svg>
         </div>
 
-        <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
-          <strong style="color: var(--color-brass-gold);">Coverage:</strong> ${needle.diameter_mm}mm
+        <div class="compare-stat-row">
+          <strong class="compare-stat-label">${coverageLabel}:</strong> ${needle.diameter_mm}mm
         </div>
-        <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
-          <strong style="color: var(--color-brass-gold);">Pattern:</strong> ${needle.pattern.replace('_', ' ')}
+        <div class="compare-stat-row">
+          <strong class="compare-stat-label">${patternLabel}:</strong> ${needle.pattern.replace('_', ' ')}
         </div>
-        <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
-          <strong style="color: var(--color-brass-gold);">Voltage:</strong> ${needle.voltage}
+        <div class="compare-stat-row">
+          <strong class="compare-stat-label">${voltageLabel}:</strong> ${needle.voltage}
         </div>
-        <div style="font-size: 0.75rem; color: var(--color-text-secondary);">
-          <strong style="color: var(--color-brass-gold);">Best for:</strong> ${needle.uses.slice(0, 2).join(', ')}
+        <div class="compare-stat-row">
+          <strong class="compare-stat-label">${bestForLabel}:</strong> ${usesList.slice(0, 2).join(', ')}
         </div>
       </div>
     `;
@@ -737,12 +914,11 @@ function generateComparisonDiagram(svgId, needle) {
   const patternRadius = 25;
 
   if (needle.pattern === 'single') {
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', centerX);
     circle.setAttribute('cy', centerY);
     circle.setAttribute('r', needleRadius);
-    circle.setAttribute('fill', '#D4AF37');
-    circle.setAttribute('stroke', '#E74C3C');
+    circle.setAttribute('class', 'diagram-needle-point');
     circle.setAttribute('stroke-width', '2');
     svg.appendChild(circle);
   } else if (needle.pattern === 'tight_round' || needle.pattern === 'loose_round') {
@@ -754,12 +930,11 @@ function generateComparisonDiagram(svgId, needle) {
       const x = centerX + Math.cos(angle) * radius;
       const y = centerY + Math.sin(angle) * radius;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '1.5');
       svg.appendChild(circle);
     }
@@ -770,12 +945,11 @@ function generateComparisonDiagram(svgId, needle) {
 
     for (let i = 0; i < needle.count; i++) {
       const x = startX + i * spacing;
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', centerY);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '1.5');
       svg.appendChild(circle);
     }
@@ -791,12 +965,11 @@ function generateComparisonDiagram(svgId, needle) {
       const curveY = Math.sin(progress * Math.PI) * curveAmount;
       const y = centerY + curveY;
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', needleRadius);
-      circle.setAttribute('fill', '#D4AF37');
-      circle.setAttribute('stroke', '#E74C3C');
+      circle.setAttribute('class', 'diagram-needle-point');
       circle.setAttribute('stroke-width', '1.5');
       svg.appendChild(circle);
     }
@@ -814,12 +987,11 @@ function generateComparisonDiagram(svgId, needle) {
 
       for (let i = 0; i < rowNeedles && needleIndex < needle.count; i++) {
         const x = startX + i * spacing;
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const circle = document.createElementNS(SVG_NS, 'circle');
         circle.setAttribute('cx', x);
         circle.setAttribute('cy', y);
         circle.setAttribute('r', needleRadius);
-        circle.setAttribute('fill', '#D4AF37');
-        circle.setAttribute('stroke', '#E74C3C');
+        circle.setAttribute('class', 'diagram-needle-point');
         circle.setAttribute('stroke-width', '1.5');
         svg.appendChild(circle);
         needleIndex++;
@@ -893,13 +1065,21 @@ function populateReferenceList(listId, needles) {
   const list = document.getElementById(listId);
   if (!list) return;
 
-  list.innerHTML = needles.map(needle => `
-    <div style="padding: 0.75rem; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; transition: all 0.2s;" onclick="handleDecodeFromRef('${needle.code}')">
-      <div style="font-family: var(--font-family-mono); font-weight: bold; color: var(--color-brass-gold); font-size: 1rem; margin-bottom: 0.25rem;">${needle.code}</div>
-      <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${needle.count} ${needle.type}</div>
-      <div style="font-size: 0.625rem; color: var(--color-text-muted); margin-top: 0.25rem;">${needle.uses[0]}</div>
-    </div>
-  `).join('');
+  const tNeedle = (window.I18N && window.I18N.getNeedleTranslation) ? window.I18N.getNeedleTranslation : null;
+
+  list.innerHTML = needles.map(needle => {
+    const tr = tNeedle ? tNeedle(needle.code) : null;
+    const typeLabel = (tr && tr.type) ? tr.type : needle.type;
+    const firstUse = (tr && tr.uses && tr.uses[0]) ? tr.uses[0] : needle.uses[0];
+
+    return `
+      <button type="button" class="ref-item-btn" onclick="handleDecodeFromRef('${needle.code}')">
+        <div class="ref-item-code">${needle.code}</div>
+        <div class="ref-item-type">${needle.count} ${typeLabel}</div>
+        <div class="ref-item-use">${firstUse}</div>
+      </button>
+    `;
+  }).join('');
 }
 
 function handleDecodeFromRef(code) {
@@ -927,23 +1107,42 @@ function handleDecodeFromRef(code) {
 function initEmbedModal() {
   const embedButton = document.getElementById('embed-button');
   const modal = document.getElementById('embed-modal');
-  const closeButton = document.getElementById('modal-close');
-  const overlay = document.getElementById('modal-overlay');
-  const copyButton = document.getElementById('copy-embed-code');
+  const closeButton = document.getElementById('close-modal') || document.getElementById('modal-close');
+  const closeBottomBtn = document.getElementById('close-modal-btn');
+  const copyButton = document.getElementById('copy-code-btn') || document.getElementById('copy-embed-code');
+
+  const handleOpen = () => {
+    if (modal) {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+  };
+
+  const handleClose = () => {
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  };
 
   if (embedButton) {
-    embedButton.addEventListener('click', () => {
-      modal.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    });
+    embedButton.addEventListener('click', handleOpen);
   }
 
   if (closeButton) {
-    closeButton.addEventListener('click', closeModal);
+    closeButton.addEventListener('click', handleClose);
   }
 
-  if (overlay) {
-    overlay.addEventListener('click', closeModal);
+  if (closeBottomBtn) {
+    closeBottomBtn.addEventListener('click', handleClose);
+  }
+
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        handleClose();
+      }
+    });
   }
 
   if (copyButton) {
@@ -952,18 +1151,10 @@ function initEmbedModal() {
 
   // Close on Escape key
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal && modal.style.display === 'block') {
-      closeModal();
+    if (e.key === 'Escape' && modal && modal.style.display !== 'none') {
+      handleClose();
     }
   });
-}
-
-function closeModal() {
-  const modal = document.getElementById('embed-modal');
-  if (modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
-  }
 }
 
 function copyEmbedCode() {
@@ -997,7 +1188,8 @@ function fallbackCopy(text, successMsg) {
     document.execCommand('copy');
     showCopySuccess(successMsg);
   } catch (err) {
-    alert('Failed to copy code. Please select and copy manually.');
+    const fallbackMsg = (window.t && window.t('embedModal.copyFallback')) || 'Please select and copy the code manually.';
+    alert(fallbackMsg);
   }
 
   document.body.removeChild(textarea);
@@ -1013,77 +1205,121 @@ function showCopySuccess(successMsg) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 10. EMAIL CAPTURE
+// 10. TOOLS CATALOG MODAL
 // ═══════════════════════════════════════════════════════════
 
-function initEmailCapture() {
-  const footerForm = document.getElementById('footer-email-form');
-  const modalForm = document.getElementById('modal-email-form');
+function initToolsCatalogModal() {
+  const catalogBtn = document.getElementById('tools-catalog-button') || document.getElementById('nav-tools-catalog');
+  const modal = document.getElementById('tools-catalog-modal');
+  const closeTopBtn = document.getElementById('close-tools-modal');
+  const closeBottomBtn = document.getElementById('close-tools-modal-btn');
 
-  if (footerForm) {
-    footerForm.addEventListener('submit', handleEmailSubmit);
+  if (!modal) return;
+
+  const handleOpen = (e) => {
+    if (e) e.preventDefault();
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleClose = () => {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  if (catalogBtn) {
+    catalogBtn.addEventListener('click', handleOpen);
   }
 
-  if (modalForm) {
-    modalForm.addEventListener('submit', handleEmailSubmit);
-  }
-}
-
-function handleEmailSubmit(e) {
-  e.preventDefault();
-
-  const form = e.target;
-  const location = form.getAttribute('data-location');
-  const emailInput = form.querySelector('.needle-selector__email-input');
-  const submitButton = form.querySelector('.needle-selector__email-submit');
-  const successMsg = form.querySelector('.needle-selector__email-success');
-  const errorMsg = form.querySelector('.needle-selector__email-error');
-
-  const email = emailInput.value.trim();
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    showEmailMessage(errorMsg, successMsg);
-    return;
+  if (closeTopBtn) {
+    closeTopBtn.addEventListener('click', handleClose);
   }
 
-  // Disable button during submission
-  submitButton.disabled = true;
-  submitButton.textContent = 'Subscribing...';
-
-  // TODO: INTEGRATE WITH EMAIL SERVICE
-  // Replace with Mailchimp/ConvertKit API call
-  // Example:
-  // fetch('/api/subscribe', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ email, source: location, tool: 'needle-selector' })
-  // })
-
-  // Simulate API call
-  setTimeout(() => {
-    showEmailMessage(successMsg, errorMsg);
-    emailInput.value = '';
-    submitButton.disabled = false;
-    submitButton.textContent = location === 'footer' ? 'Notify Me' : 'Subscribe';
-
-    console.log('Email captured:', email, 'from:', location, 'tool: needle-selector');
-  }, 1000);
-}
-
-function showEmailMessage(showEl, hideEl) {
-  if (hideEl) hideEl.style.display = 'none';
-  if (showEl) {
-    showEl.style.display = 'block';
-    setTimeout(() => {
-      showEl.style.display = 'none';
-    }, 5000);
+  if (closeBottomBtn) {
+    closeBottomBtn.addEventListener('click', handleClose);
   }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      handleClose();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display !== 'none') {
+      handleClose();
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
-// 11. UTILITY FUNCTIONS
+// 11. LANGUAGE SWITCHER & SMOOTH NAV
+// ═══════════════════════════════════════════════════════════
+
+function initLanguageSwitcher() {
+  const langSelects = document.querySelectorAll('.language-select, #language-select, #embed-language-select');
+  if (!langSelects.length) return;
+
+  const getLangFn = window.I18N && (window.I18N.getLang || window.I18N.getCurrentLanguage);
+  const currentLang = getLangFn ? getLangFn() : 'en';
+
+  langSelects.forEach(select => {
+    select.value = currentLang;
+    select.addEventListener('change', function(e) {
+      const selectedLang = e.target.value;
+      const setLangFn = window.I18N && (window.I18N.setLang || window.I18N.setLanguage);
+      if (setLangFn) {
+        setLangFn(selectedLang);
+      }
+      langSelects.forEach(s => { s.value = selectedLang; });
+      refreshLocalizedDynamicContent();
+    });
+  });
+}
+
+function refreshLocalizedDynamicContent() {
+  // Re-populate comparison dropdowns with localized needle types
+  populateComparisonDropdowns();
+
+  // Re-render reference matrix with localized labels
+  populateReferenceChart();
+
+  // Re-render recommendation if currently visible
+  const resultsSection = document.getElementById('results-section');
+  if (resultsSection && resultsSection.style.display !== 'none' && currentRecommendation) {
+    displayRecommendation(currentRecommendation);
+  }
+
+  // Re-render decoder if visible and input has value
+  const decoderInput = document.getElementById('needle-code-input');
+  const decoderResult = document.getElementById('decoder-result');
+  if (decoderResult && decoderResult.style.display !== 'none' && decoderInput && decoderInput.value) {
+    handleDecode();
+  }
+
+  // Re-render comparison if visible
+  const compareResults = document.getElementById('compare-results');
+  if (compareResults && compareResults.style.display !== 'none') {
+    handleComparison();
+  }
+}
+
+function initSmoothNav() {
+  const navLinks = document.querySelectorAll('.site-nav__link[href^="#"]');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href').substring(1);
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        e.preventDefault();
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// 12. UTILITY EXPORTS
 // ═══════════════════════════════════════════════════════════
 
 // Make handleDecodeFromRef available globally
