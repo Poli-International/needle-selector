@@ -619,7 +619,7 @@ function displayDecodedNeedle(code, needle, container, gaugeInfo) {
       <div class="decoder-hero-card">
         <div class="decoder-hero-code">${code}</div>
         <div class="decoder-hero-label">${needle.count} ${translatedType}</div>
-        <svg id="decoder-diagram" width="150" height="150" viewBox="0 0 150 150" class="decoder-hero-diagram" aria-label="Decoded cluster diagram"></svg>
+        <svg id="decoder-diagram" width="150" height="150" viewBox="0 0 150 150" class="decoder-hero-diagram" aria-label="${(window.t && window.t('reference.decoderDiagramAria')) || 'Decoded cluster diagram'}"></svg>
       </div>
 
       <div class="decoder-details-grid">
@@ -873,7 +873,7 @@ function displayComparison(codes) {
         </div>
 
         <div class="compare-diagram-wrapper">
-          <svg id="compare-diagram-${code}" width="120" height="120" viewBox="0 0 120 120" class="compare-diagram-svg" aria-label="Comparison cluster diagram"></svg>
+          <svg id="compare-diagram-${code}" width="120" height="120" viewBox="0 0 120 120" class="compare-diagram-svg" aria-label="${(window.t && window.t('reference.compareDiagramAria')) || 'Comparison cluster diagram'}"></svg>
         </div>
 
         <div class="compare-stat-row">
@@ -1022,11 +1022,11 @@ function toggleReferenceChart() {
   if (content.style.display === 'none' || content.style.display === '') {
     content.style.display = 'block';
     icon.textContent = '▲';
-    text.textContent = 'Hide Chart';
+    text.textContent = (window.t && window.t('reference.hideChart')) || 'Hide Chart';
   } else {
     content.style.display = 'none';
     icon.textContent = '▼';
-    text.textContent = 'Show Chart';
+    text.textContent = (window.t && window.t('reference.showChart')) || 'Show Chart';
   }
 }
 
