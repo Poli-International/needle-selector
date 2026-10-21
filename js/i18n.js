@@ -126,6 +126,8 @@
       "tabM1": "Weaved Magnums (M1)",
       "tabCM": "Curved Magnums (CM)",
       "tabF": "Flats (F)",
+      "decoderDiagramAria": "Decoded cluster diagram",
+      "compareDiagramAria": "Comparison cluster diagram",
       "hideChart": "Hide Chart",
       "showChart": "Show Chart"
     },
@@ -774,6 +776,8 @@
       "tabM1": "Magnums Entrelacés (M1)",
       "tabCM": "Magnums Courbés (CM)",
       "tabF": "Plats (F)",
+      "decoderDiagramAria": "Schéma de la configuration décodée",
+      "compareDiagramAria": "Schéma comparatif de la configuration",
       "hideChart": "Masquer le Tableau",
       "showChart": "Afficher le Tableau"
     },
@@ -1422,6 +1426,8 @@
       "tabM1": "Magnum Intrecciati (M1)",
       "tabCM": "Magnum Curvi (CM)",
       "tabF": "Piatti (F)",
+      "decoderDiagramAria": "Schema della configurazione decodificata",
+      "compareDiagramAria": "Schema comparativo della configurazione",
       "hideChart": "Nascondi Tabella",
       "showChart": "Mostra Tabella"
     },
@@ -2070,6 +2076,8 @@
       "tabM1": "Gewebte Magnums (M1)",
       "tabCM": "Gebogene Magnums (CM)",
       "tabF": "Flachnadeln (F)",
+      "decoderDiagramAria": "Diagramm der entschlüsselten Nadelgruppe",
+      "compareDiagramAria": "Vergleichsdiagramm der Nadelgruppe",
       "hideChart": "Tabelle ausblenden",
       "showChart": "Tabelle anzeigen"
     },
@@ -2718,6 +2726,8 @@
       "tabM1": "Magnums Trenzadas (M1)",
       "tabCM": "Magnums Curvas (CM)",
       "tabF": "Planas (F)",
+      "decoderDiagramAria": "Diagrama de la configuración decodificada",
+      "compareDiagramAria": "Diagrama comparativo de la configuración",
       "hideChart": "Ocultar Tabla",
       "showChart": "Mostrar Tabla"
     },
@@ -3366,6 +3376,8 @@
       "tabM1": "Gevlochten Magnums (M1)",
       "tabCM": "Gebogen Magnums (CM)",
       "tabF": "Platte Naalden (F)",
+      "decoderDiagramAria": "Diagram van de gedecodeerde naaldconfiguratie",
+      "compareDiagramAria": "Vergelijkingsdiagram van de naaldconfiguratie",
       "hideChart": "Tabel Verbergen",
       "showChart": "Tabel Tonen"
     },
@@ -4014,6 +4026,8 @@
       "tabM1": "Magnums Trançados (M1)",
       "tabCM": "Magnums Curvados (CM)",
       "tabF": "Planos (F)",
+      "decoderDiagramAria": "Diagrama da configuração descodificada",
+      "compareDiagramAria": "Diagrama comparativo da configuração",
       "hideChart": "Ocultar Tabela",
       "showChart": "Exibir Tabela"
     },
@@ -4662,6 +4676,8 @@
       "tabM1": "แมกนัมถัก (M1)",
       "tabCM": "แมกนัมโค้ง (CM)",
       "tabF": "แฟลต (F)",
+      "decoderDiagramAria": "แผนภาพการจัดเรียงเข็มที่ถอดรหัสแล้ว",
+      "compareDiagramAria": "แผนภาพเปรียบเทียบการจัดเรียงเข็ม",
       "hideChart": "ซ่อนแผนภูมิ",
       "showChart": "แสดงแผนภูมิ"
     },
