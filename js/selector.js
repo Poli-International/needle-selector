@@ -525,7 +525,7 @@ function handleDecode() {
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
       <div class="decoder-not-found-box">
-        <p class="decoder-not-found-title">❌ ${notFoundTitle}</p>
+        <p class="decoder-not-found-title"><svg class=ti-i width=1.15em height=1.15em aria-hidden=true style=vertical-align:-.18em;flex:none><use href=../shared/icons.svg#i-x></use></svg> ${notFoundTitle}</p>
         <p class="decoder-not-found-text">${notFoundDesc}</p>
       </div>
     `;
@@ -652,13 +652,13 @@ function displayDecodedNeedle(code, needle, container, gaugeInfo) {
 
         <div class="decoder-pros-cons-grid">
           <div class="decoder-pro-box">
-            <h4 class="decoder-pro-title">✅ ${prosTitle}</h4>
+            <h4 class="decoder-pro-title"><svg class=ti-i width=1.15em height=1.15em aria-hidden=true style=vertical-align:-.18em;flex:none><use href=../shared/icons.svg#i-check></use></svg> ${prosTitle}</h4>
             <ul class="decoder-pro-list">
               ${translatedPros.map(pro => `<li>${pro}</li>`).join('')}
             </ul>
           </div>
           <div class="decoder-con-box">
-            <h4 class="decoder-con-title">⚠️ ${consTitle}</h4>
+            <h4 class="decoder-con-title"><svg class=ti-i width=1.15em height=1.15em aria-hidden=true style=vertical-align:-.18em;flex:none><use href=../shared/icons.svg#i-warn></use></svg> ${consTitle}</h4>
             <ul class="decoder-con-list">
               ${translatedCons.map(con => `<li>${con}</li>`).join('')}
             </ul>
