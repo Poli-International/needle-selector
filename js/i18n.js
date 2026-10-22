@@ -9,6 +9,11 @@
 
   var DICTIONARY = {
   "en": {
+    "a11y": {
+      "main_navigation": "Main Navigation",
+      "needle_cross_section_diagram": "Needle cross section diagram",
+      "enter_needle_code": "Enter needle code"
+    },
     "app": {
       "title": "Tattoo Needle Selector",
       "subtitle": "Professional configuration advisor, blister-pack code decoder, and side-by-side needle comparator for tattoo artists and apprentices.",
@@ -659,6 +664,11 @@
     }
   },
   "fr": {
+    "a11y": {
+      "main_navigation": "Navigation principale",
+      "needle_cross_section_diagram": "Schéma en coupe de l'aiguille",
+      "enter_needle_code": "Saisir le code de l'aiguille"
+    },
     "app": {
       "title": "Sélecteur d'Aiguilles de Tatouage",
       "subtitle": "Conseiller de configuration technique, décodeur de blister et comparateur d'aiguilles pour tatoueurs professionnels et apprentis.",
@@ -1309,6 +1319,11 @@
     }
   },
   "it": {
+    "a11y": {
+      "main_navigation": "Navigazione principale",
+      "needle_cross_section_diagram": "Schema in sezione dell'ago",
+      "enter_needle_code": "Inserisci il codice dell'ago"
+    },
     "app": {
       "title": "Selettore Aghi per Tatuaggio",
       "subtitle": "Consulente tecnico di configurazione, decodificatore di codici blister e comparatore di aghi per tatuatori professionisti e apprendisti.",
@@ -1959,6 +1974,11 @@
     }
   },
   "de": {
+    "a11y": {
+      "main_navigation": "Hauptnavigation",
+      "needle_cross_section_diagram": "Querschnittschema der Nadel",
+      "enter_needle_code": "Nadelcode eingeben"
+    },
     "app": {
       "title": "Tätowiernadel-Konfigurator",
       "subtitle": "Professioneller Konfigurationsberater, Blistercode-Decoder und Nadelvergleicher für Tätowierer und Auszubildende.",
@@ -2609,6 +2629,11 @@
     }
   },
   "es": {
+    "a11y": {
+      "main_navigation": "Navegación principal",
+      "needle_cross_section_diagram": "Diagrama en corte de la aguja",
+      "enter_needle_code": "Introducir el código de la aguja"
+    },
     "app": {
       "title": "Selector de Agujas de Tatuaje",
       "subtitle": "Asesor de configuración técnica, decodificador de blíster y comparador de agujas para tatuadores profesionales y aprendices.",
@@ -3259,6 +3284,11 @@
     }
   },
   "nl": {
+    "a11y": {
+      "main_navigation": "Hoofdnavigatie",
+      "needle_cross_section_diagram": "Doorsnedeschema van de naald",
+      "enter_needle_code": "Naaldcode invoeren"
+    },
     "app": {
       "title": "Tatoeagenaald Kiezer",
       "subtitle": "Professionele configuratie-adviseur, blistercode-decoder en naaldvergelijker voor tatoeëerders en leerlingen.",
@@ -3909,6 +3939,11 @@
     }
   },
   "pt": {
+    "a11y": {
+      "main_navigation": "Navegação principal",
+      "needle_cross_section_diagram": "Diagrama em corte da agulha",
+      "enter_needle_code": "Inserir o código da agulha"
+    },
     "app": {
       "title": "Seletor de Agulhas de Tatuagem",
       "subtitle": "Orientador técnico de configurações, decodificador de blister e comparador de agulhas para tatuadores profissionais e aprendizes.",
@@ -4559,6 +4594,11 @@
     }
   },
   "th": {
+    "a11y": {
+      "main_navigation": "การนำทางหลัก",
+      "needle_cross_section_diagram": "แผนภาพหน้าตัดของเข็ม",
+      "enter_needle_code": "ป้อนรหัสเข็ม"
+    },
     "app": {
       "title": "ตัวเลือกเข็มสัก",
       "subtitle": "ที่ปรึกษาการกำหนดค่ามืออาชีพ ตัวถอดรหัสแผงบลิสเตอร์ และตัวเปรียบเทียบเข็มแบบเคียงข้างสำหรับช่างสักและผู้ฝึกงาน",
