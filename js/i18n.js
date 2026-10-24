@@ -5254,7 +5254,7 @@
 
   // Retrieve saved language from localStorage if available
   try {
-    var savedLang = localStorage.getItem('poli_needle_tool_lang');
+    var savedLang = localStorage.getItem('poli_tools_language') || localStorage.getItem('poli_needle_tool_lang');
     if (savedLang && DICTIONARY[savedLang]) {
       currentLang = savedLang;
     }
@@ -5268,6 +5268,7 @@
     if (DICTIONARY[lang]) {
       currentLang = lang;
       try {
+        localStorage.setItem('poli_tools_language', lang);
         localStorage.setItem('poli_needle_tool_lang', lang);
       } catch (e) {}
       if (typeof document !== 'undefined') {
