@@ -1,0 +1,456 @@
+/* Needle Taper section of the Needle Selector (merged from the Needle Taper Visualizer, 2026-10-24).
+   The taper rules keep their own variable names, mapped onto the selector's theme so light mode follows. */
+#needle-taper {
+    --bg-card: var(--color-background-card);
+    --bg-card-subtle: var(--color-background-hover);
+    --bg-input: var(--color-background-elevated);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-secondary);
+    --text-muted: var(--color-text-muted);
+    --border-color: var(--color-border);
+    --border-focus: var(--color-border-focus);
+    --primary-color: var(--color-highlight);
+    --primary-hover: var(--color-highlight);
+    --primary-bg-subtle: rgba(212, 175, 55, 0.12);
+    --secondary-color: #c084fc;
+    --color-danger: #f87171;
+    --color-danger-bg: rgba(248, 113, 113, 0.16);
+    --color-warning: #fbbf24;
+    --color-warning-bg: rgba(251, 191, 36, 0.16);
+    --color-success: #34d399;
+    --color-success-bg: rgba(52, 211, 153, 0.16);
+    --needle-body: #cbd5e1;
+    --needle-stroke: var(--color-highlight);
+    --skin-epidermis-bg: rgba(248, 113, 113, 0.22);
+    --skin-dermis-bg: rgba(248, 113, 113, 0.08);
+    --skin-label-color: var(--color-text-secondary);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+body.light-mode #needle-taper {
+    --primary-bg-subtle: rgba(140, 96, 0, 0.10);
+    --secondary-color: #7e22ce;
+    --color-danger: #b91c1c;
+    --color-danger-bg: rgba(185, 28, 28, 0.10);
+    --color-warning: #b45309;
+    --color-warning-bg: rgba(180, 83, 9, 0.10);
+    --color-success: #047857;
+    --color-success-bg: rgba(4, 120, 87, 0.10);
+    --needle-body: #334155;
+    --skin-epidermis-bg: rgba(185, 28, 28, 0.14);
+    --skin-dermis-bg: rgba(185, 28, 28, 0.05);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+#needle-taper { scroll-margin-top: 110px; }
+#needle-taper .taper-layout > *, #needle-taper .analysis-grid > * { min-width: 0; }
+#needle-taper .taper-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+#needle-taper .taper-disclaimer {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+#needle-taper .control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+#needle-taper .control-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-card);
+}
+
+#needle-taper .control-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+}
+
+#needle-taper .control-card__title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary-color);
+}
+
+#needle-taper .badge-visual-only {
+    font-size: 0.75rem; 
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--bg-card-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+#needle-taper .control-card__desc {
+    font-size: 0.8125rem; 
+    color: var(--text-secondary);
+    margin-bottom: 0.875rem;
+}
+
+#needle-taper .taper-selector-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+#needle-taper .taper-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 52px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    touch-action: manipulation;
+}
+
+#needle-taper .taper-btn:focus-visible {
+    outline: 2px solid var(--border-focus);
+}
+
+#needle-taper .taper-btn:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-card-subtle);
+}
+
+#needle-taper .taper-btn.active {
+    border-color: var(--primary-color);
+    background: var(--primary-bg-subtle);
+    border-width: 2px;
+}
+
+#needle-taper .taper-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+#needle-taper .taper-val {
+    font-size: 0.75rem; 
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--primary-color);
+    background: var(--bg-card-subtle);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+#needle-taper .form-select {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+#needle-taper .form-select:focus-visible {
+    border-color: var(--border-focus);
+    outline: 2px solid var(--border-focus);
+}
+
+#needle-taper .range-container {
+    padding: 0.5rem 0;
+}
+
+#needle-taper .range-input {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-card-subtle);
+    outline: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    accent-color: var(--primary-color);
+}
+
+#needle-taper .range-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.625rem;
+    font-size: 0.75rem; 
+    color: var(--text-secondary);
+}
+
+#needle-taper .depth-active-display {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+#needle-taper .visualizer-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+#needle-taper .canvas-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+#needle-taper .canvas-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 800 / 500;
+    min-height: 280px;
+    max-height: 520px;
+    background: var(--bg-input);
+}
+
+#needle-taper #taper-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#needle-taper .skin-epidermis {
+    fill: var(--skin-epidermis-bg);
+}
+
+#needle-taper .skin-dermis {
+    fill: var(--skin-dermis-bg);
+}
+
+#needle-taper .layer-line {
+    stroke: var(--border-color);
+    stroke-width: 1;
+}
+
+#needle-taper .layer-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px; 
+    font-weight: 700;
+    fill: var(--skin-label-color);
+}
+
+#needle-taper .needle-outline {
+    fill: var(--needle-body);
+    stroke: var(--needle-stroke);
+    stroke-width: 1.5;
+    transition: d 0.25s ease, transform 0.25s ease;
+}
+
+#needle-taper .impact-glow {
+    transition: r 0.25s ease, fill 0.25s ease, opacity 0.25s ease;
+}
+
+#needle-taper .impact-glow.impact-high {
+    fill: var(--color-danger);
+    opacity: 0.35;
+}
+
+#needle-taper .impact-glow.impact-medium {
+    fill: var(--color-warning);
+    opacity: 0.3;
+}
+
+#needle-taper .impact-glow.impact-low {
+    fill: var(--color-success);
+    opacity: 0.25;
+}
+
+#needle-taper .measure-line {
+    stroke: var(--secondary-color);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+}
+
+#needle-taper .measure-text {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--secondary-color);
+}
+
+#needle-taper .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+#needle-taper .analysis-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+}
+
+#needle-taper .analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+#needle-taper .analysis-label {
+    font-size: 0.75rem; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+#needle-taper .analysis-level {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+#needle-taper .qualitative-meter {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    height: 10px;
+    margin-bottom: 0.875rem;
+}
+
+#needle-taper .meter-segment {
+    background: var(--bg-card-subtle);
+    border-radius: 2px;
+    transition: background-color 0.25s ease;
+}
+
+#needle-taper .meter-low .meter-segment:nth-child(1) {
+    background: var(--color-success);
+}
+
+#needle-taper .meter-medium .meter-segment:nth-child(1), #needle-taper .meter-medium .meter-segment:nth-child(2) {
+    background: var(--color-warning);
+}
+
+#needle-taper .meter-high .meter-segment:nth-child(1), #needle-taper .meter-high .meter-segment:nth-child(2), #needle-taper .meter-high .meter-segment:nth-child(3) {
+    background: var(--color-danger);
+}
+
+#needle-taper .text-low {
+    color: var(--color-success);
+}
+
+#needle-taper .text-medium {
+    color: var(--color-warning);
+}
+
+#needle-taper .text-high {
+    color: var(--color-danger);
+}
+
+#needle-taper .meter-ink-low .meter-segment:nth-child(1) {
+    background: var(--primary-color);
+}
+
+#needle-taper .meter-ink-medium .meter-segment:nth-child(1), #needle-taper .meter-ink-medium .meter-segment:nth-child(2) {
+    background: var(--primary-color);
+}
+
+#needle-taper .meter-ink-high .meter-segment:nth-child(1), #needle-taper .meter-ink-high .meter-segment:nth-child(2), #needle-taper .meter-ink-high .meter-segment:nth-child(3) {
+    background: var(--primary-color);
+}
+
+#needle-taper .analysis-desc {
+    font-size: 0.8125rem; 
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-top: auto;
+}
+
+#needle-taper .tendency-body {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+#needle-taper .related-tools-section {
+    margin-top: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+}
+
+#needle-taper .related-tools-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#needle-taper .related-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+#needle-taper .related-tool-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#needle-taper .related-tool-text {
+    font-size: 0.8125rem; 
+    color: var(--text-secondary);
+}
+
+#needle-taper .related-tool-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+#needle-taper .related-tool-link:hover {
+    text-decoration: underline;
+    color: var(--primary-hover);
+}
+
+@media (max-width: 960px) {
+    #needle-taper .taper-layout, #needle-taper .analysis-grid, #needle-taper .related-tools-grid { grid-template-columns: minmax(0, 1fr); }
+    #needle-taper .taper-layout { gap: 1.5rem; }
+}
+@media (max-width: 360px) {
+    #needle-taper .control-card, #needle-taper .analysis-card { padding: 1rem; }
+}
