@@ -88,6 +88,8 @@
     var tab = null;
     try { tab = new URLSearchParams(window.parent.location.search).get('tab'); } catch (e) { /* cross-origin embed */ }
     if (!tab) tab = new URLSearchParams(location.search).get('tab');
-    if (tab === 'taper') setTimeout(function () { $('needle-taper').scrollIntoView({ block: 'start' }); }, 400);
+    // the section moves to the top of the tool: scrolling the wrapper page to it did not hold (2026-10-24)
+    var sec = $('needle-taper');
+    if (tab === 'taper' && sec) sec.parentNode.insertBefore(sec, sec.parentNode.firstElementChild);
   });
 })();
