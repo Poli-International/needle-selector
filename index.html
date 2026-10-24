@@ -34,6 +34,7 @@ if (window.self !== window.top) {
     <meta property="og:url" content="https://poliinternational.com/needle-selector/">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="stylesheet" href="/tools/needle-selector/css/style.css">
+    <link rel="stylesheet" href="/tools/needle-selector/css/taper.css">
     <link rel="stylesheet" href="/tools/shared/theme.css">
     <script src="/js/input-guards.js"></script>
     <link rel="stylesheet" href="/tools/shared/print.css" media="print">
@@ -118,6 +119,7 @@ if (window.self !== window.top) {
                     <a href="#code-decoder" class="site-nav__link" data-i18n="nav.decoder">Code Decoder</a>
                     <a href="#needle-comparator" class="site-nav__link" data-i18n="nav.comparator">Needle Comparator</a>
                     <a href="#technical-matrix" class="site-nav__link" data-i18n="nav.reference">Technical Reference</a>
+                    <a href="#needle-taper" class="site-nav__link" data-i18n="taper.nav.label">Needle Taper</a>
                     <button type="button" class="site-nav__link site-nav__btn" id="tools-catalog-button" data-i18n="app.toolsCatalog">Poli Tools Catalog</button>
                 </nav>
 
@@ -358,6 +360,162 @@ if (window.self !== window.top) {
                     </div>
                 </div>
             </section>
+
+            <!-- 5. Needle Taper (merged from the Needle Taper Visualizer, 2026-10-24) -->
+            <section class="needle-selector__taper" id="needle-taper">
+                <h2 class="needle-selector__section-title" data-i18n="taper.app.title">Needle Taper Visualizer</h2>
+                <p class="needle-selector__section-subtitle" data-i18n="taper.app.subtitle">Conical Taper &amp; Dermal Dynamics</p>
+                <div class="taper-layout">
+                    <!-- Control Panel -->
+                    <aside class="control-panel" id="control-panel" aria-label="Configuration Controls" data-i18n-aria-label="taper.controls.panel_aria">
+                        <!-- Taper Configuration (4 Tapers accurately) -->
+                        <div class="control-card" id="section-taper">
+                            <div class="control-card__header">
+                                <h2 class="control-card__title" data-i18n="taper.controls.taper_title">Taper Configuration</h2>
+                            </div>
+                            <div class="taper-selector-grid" id="taper-selector" role="group" aria-label="Taper Selection" data-i18n-aria-label="taper.controls.taper_select_aria">
+                                <button class="taper-btn active" data-taper="short" type="button" id="btn-taper-short" aria-pressed="true">
+                                    <span class="taper-label" data-i18n="taper.controls.short_taper">Short Taper (ST)</span>
+                                    <span class="taper-val">1.5 mm</span>
+                                </button>
+                                <button class="taper-btn" data-taper="medium" type="button" id="btn-taper-medium" aria-pressed="false">
+                                    <span class="taper-label" data-i18n="taper.controls.medium_taper">Medium Taper (MT)</span>
+                                    <span class="taper-val">2.5 mm</span>
+                                </button>
+                                <button class="taper-btn" data-taper="long" type="button" id="btn-taper-long" aria-pressed="false">
+                                    <span class="taper-label" data-i18n="taper.controls.long_taper">Long Taper (LT)</span>
+                                    <span class="taper-val">6.0 mm</span>
+                                </button>
+                                <button class="taper-btn" data-taper="extra" type="button" id="btn-taper-extra" aria-pressed="false">
+                                    <span class="taper-label" data-i18n="taper.controls.extra_taper">Extra Long (ELT)</span>
+                                    <span class="taper-val">8.0 mm</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Needle Gauge (Clearly Labeled Illustration-Only) -->
+                        <div class="control-card" id="section-gauge">
+                            <div class="control-card__header">
+                                <h2 class="control-card__title" data-i18n="taper.controls.gauge_title">Needle Gauge</h2>
+                                <span class="badge-visual-only" data-i18n="taper.controls.visual_only_badge">Illustration only</span>
+                            </div>
+                            <p class="control-card__desc" data-i18n="taper.controls.gauge_note">Adjusts cross-section needle thickness in diagram</p>
+                            <label for="needle-gauge" class="visually-hidden" data-i18n="taper.controls.gauge_title">Needle Gauge</label>
+                            <select id="needle-gauge" class="form-select" aria-label="Needle Gauge" data-i18n-aria-label="taper.controls.gauge_title">
+                                <option value="0.25" data-i18n="taper.controls.gauge_08">#08 (0.25mm) - Bugpin</option>
+                                <option value="0.30" data-i18n="taper.controls.gauge_10">#10 (0.30mm) - Double Zero</option>
+                                <option value="0.35" selected data-i18n="taper.controls.gauge_12">#12 (0.35mm) - Standard</option>
+                            </select>
+                        </div>
+
+                        <!-- Anatomical Depth (Clearly Labeled Illustration-Only) -->
+                        <div class="control-card" id="section-depth">
+                            <div class="control-card__header">
+                                <h2 class="control-card__title" data-i18n="taper.controls.depth_title">Anatomical Depth</h2>
+                                <span class="badge-visual-only" data-i18n="taper.controls.visual_only_badge">Illustration only</span>
+                            </div>
+                            <p class="control-card__desc" data-i18n="taper.controls.depth_note">Adjusts penetration depth in diagram</p>
+                            <div class="range-container">
+                                <label for="penetration-depth" class="visually-hidden" data-i18n="taper.controls.depth_title">Anatomical Depth</label>
+                                <input type="range" id="penetration-depth" min="0.5" max="2.5" step="0.1" value="1.5" class="range-input" aria-label="Anatomical penetration depth" data-i18n-aria-label="taper.controls.depth_slider_aria">
+                                <div class="range-labels">
+                                    <span>0.5 mm</span>
+                                    <span id="depth-val" class="depth-active-display">1.5 mm</span>
+                                    <span>2.5 mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Visualization Area & Qualitative Analysis -->
+                    <section class="visualizer-stage" id="visualizer-stage" aria-label="Visualizer Stage" data-i18n-aria-label="taper.stage.stage_aria">
+                        <!-- SVG Stage -->
+                        <div class="canvas-card" id="canvas-card">
+                            <div class="canvas-wrapper" id="canvas-wrapper">
+                                <svg id="taper-svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Needle taper and dermal layer interaction diagram" data-i18n-aria-label="taper.svg.diagram_aria">
+                                    <!-- Skin Strata Layers -->
+                                    <rect class="skin-epidermis" x="0" y="300" width="800" height="40"></rect>
+                                    <rect class="skin-dermis" x="0" y="340" width="800" height="160"></rect>
+                                
+                                    <line class="layer-line" x1="0" y1="300" x2="800" y2="300"></line>
+                                    <line class="layer-line" x1="0" y1="340" x2="800" y2="340"></line>
+                                
+                                    <text x="14" y="325" class="layer-label" id="svg-label-epidermis" data-i18n="taper.svg.epidermis">EPIDERMIS</text>
+                                    <text x="14" y="365" class="layer-label" id="svg-label-dermis" data-i18n="taper.svg.dermis">DERMIS (Target Layer)</text>
+
+                                    <!-- Conical Needle Geometry -->
+                                    <g id="needle-group" transform="translate(0, 90)">
+                                        <path id="needle-taper-path" class="needle-outline" d=""></path>
+                                        <rect id="needle-shaft" class="needle-outline" x="380" y="-1000" width="40" height="1000"></rect>
+                                    
+                                        <!-- Impact Zone -->
+                                        <circle id="impact-glow" cx="400" cy="300" r="14" class="impact-glow impact-high"></circle>
+                                    </g>
+
+                                    <!-- Taper Dimension Measurement Line -->
+                                    <line id="taper-measure" x1="430" y1="0" x2="430" y2="0" class="measure-line"></line>
+                                    <text id="taper-measure-text" x="440" y="0" class="measure-text">Taper: 1.5 mm</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Qualitative Analysis Grid (High/Medium/Low Bands) -->
+                        <div class="analysis-grid" id="analysis-grid">
+                            <!-- Trauma Rating Card -->
+                            <div class="analysis-card" id="card-trauma">
+                                <div class="analysis-header">
+                                    <span class="analysis-label" data-i18n="taper.analysis.trauma_title">Tissue Trauma Tendency</span>
+                                    <span id="trauma-level-text" class="analysis-level text-high">High</span>
+                                </div>
+                                <div id="trauma-band" class="qualitative-meter meter-high" role="progressbar" aria-label="Trauma rating meter" data-i18n-aria-label="taper.analysis.trauma_meter_aria">
+                                    <div class="meter-segment"></div>
+                                    <div class="meter-segment"></div>
+                                    <div class="meter-segment"></div>
+                                </div>
+                                <p id="trauma-desc-text" class="analysis-desc">Larger conical puncture diameter upon penetration</p>
+                            </div>
+
+                            <!-- Pigment Delivery Card -->
+                            <div class="analysis-card" id="card-pigment">
+                                <div class="analysis-header">
+                                    <span class="analysis-label" data-i18n="taper.analysis.ink_title">Pigment Delivery Tendency</span>
+                                    <span id="ink-level-text" class="analysis-level">High</span>
+                                </div>
+                                <div id="ink-band" class="qualitative-meter meter-ink-high" role="progressbar" aria-label="Pigment delivery meter" data-i18n-aria-label="taper.analysis.ink_meter_aria">
+                                    <div class="meter-segment"></div>
+                                    <div class="meter-segment"></div>
+                                    <div class="meter-segment"></div>
+                                </div>
+                                <p id="ink-desc-text" class="analysis-desc">Rapid ink deposition per puncture cycle</p>
+                            </div>
+
+                            <!-- Application Tendencies Card -->
+                            <div class="analysis-card" id="card-tendency">
+                                <div class="analysis-header">
+                                    <span class="analysis-label" data-i18n="taper.analysis.tendency_title">Application Tendencies</span>
+                                </div>
+                                <p id="tendency-text" class="tendency-body">Frequently favored for solid color packing and bold traditional linework where dense saturation is desired.</p>
+                            </div>
+                        </div>
+
+                        <!-- Related Studio Tools (Voltage & Grouping Links) -->
+                        <div class="related-tools-section" id="related-tools-section">
+                            <h3 class="related-tools-title" data-i18n="taper.related.title">Related Studio Tools</h3>
+                            <div class="related-tools-grid">
+                                <div class="related-tool-item">
+                                    <p class="related-tool-text" data-i18n="taper.related.voltage_text">For needle speed, stroke dynamics, and voltage calibration:</p>
+                                    <a href="https://poliinternational.com/machine-voltage-configurator/" target="_top" class="related-tool-link">
+                                        <span aria-hidden="true"><svg class=ti-i width=1.15em height=1.15em aria-hidden=true style=vertical-align:-.18em;flex:none><use href=../shared/icons.svg#i-bolt></use></svg></span>
+                                        <span data-i18n="taper.related.voltage_link">Machine Voltage Configurator</span>
+                                        <span aria-hidden="true">&rarr;</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <p class="taper-disclaimer" data-i18n="taper.footer.disclaimer">Technical Reference: Taper lengths are typical examples. There is no industry standard: brands give the same name to different lengths, so check the box. Actual puncture dynamics vary by hand speed, machine stroke, and skin tension.</p>
+            </section>
         </main>
 
         <!-- Footer -->
@@ -443,6 +601,8 @@ if (window.self !== window.top) {
     <script src="/tools/needle-selector/js/needle-data.js"></script>
     <script src="/tools/needle-selector/js/i18n.js"></script>
     <script src="/tools/needle-selector/js/selector.js"></script>
+    <script src="/tools/needle-selector/js/taper-i18n.js"></script>
+    <script src="/tools/needle-selector/js/taper.js"></script>
 <script src="../shared/tool-name.js" data-th="ตัวเลือกเข็มสัก" data-en="Tattoo Needle Selector" defer></script>
 </body>
 </html>
